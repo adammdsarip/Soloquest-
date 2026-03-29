@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+
+<!-- ── PWA CORE ── -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="theme-color" content="#050a14"/>
+<link rel="manifest" href="/manifest.json"/>
+
+<!-- ── iOS PWA ── -->
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="SoloQuest"/>
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"/>
+
+<!-- ── ANDROID ── -->
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="application-name" content="SoloQuest"/>
+
+<!-- ── SEO ── -->
+<meta name="description" content="Level up your real life. AI-powered goal tracker with daily habits, quests and a Solo Leveling-inspired System."/>
+<meta name="robots" content="index, follow"/>
+<link rel="canonical" href="https://soloquest.app/"/>
+<meta property="og:title" content="SoloQuest — The System"/>
+<meta property="og:description" content="Level up your real life. One quest at a time."/>
+<meta property="og:image" content="/icons/icon-512.png"/>
+<meta property="og:type" content="website"/>
+
+<!-- ── ICONS ── -->
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png"/>
+<link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png"/>
+
+<!-- ── FONTS (display=swap prevents render-block) ── -->
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Barlow:wght@300;400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+
+<title>SoloQuest — The System</title>
+<style>
+:root{
+  --bg:#050a14;--bg2:#080f1e;--bg3:#0a1628;
+  --blue:#00d4ff;--blue-dim:rgba(0,212,255,0.12);--blue-glow:rgba(0,212,255,0.35);
+  --gold:#ffd700;--red:#ff3366;--green:#00ff88;
+  --text:#e8f0ff;--text-dim:rgba(232,240,255,0.4);
+  --border:rgba(0,212,255,0.12);
+  --mono:'Share Tech Mono',monospace;
+  --display:'Rajdhani',sans-serif;
+  --body:'Barlow',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--body);-webkit-tap-highlight-color:transparent;}
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-thumb{background:var(--blue-dim);}
+#app{min-height:100vh;display:flex;justify-content:center;}
+.shell{width:100%;max-width:480px;min-height:100vh;display:flex;flex-direction:column;position:relative;}
+.bg-grid{position:fixed;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0;}
+.bg-vignette{position:fixed;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 30%,rgba(0,212,255,0.05) 0%,transparent 65%);pointer-events:none;z-index:0;}
+.clip{clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px));}
+.clip-sm{clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));}
+.screen{position:relative;z-index:1;flex:1;display:none;flex-direction:column;}
+.screen.active{display:flex;}
+
+/* ── ONBOARD ── */
+#screen-onboard{justify-content:center;align-items:center;padding:28px 20px;gap:24px;}
+.ob-logo{text-align:center;}
+.ob-hex{width:60px;height:60px;margin:0 auto 12px;background:var(--blue-dim);border:1px solid var(--blue-glow);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);display:flex;align-items:center;justify-content:center;animation:hexP 3s ease-in-out infinite;}
+@keyframes hexP{0%,100%{box-shadow:0 0 0 rgba(0,212,255,0);}50%{box-shadow:0 0 24px rgba(0,212,255,0.35);}}
+.ob-hex svg{width:26px;height:26px;stroke:var(--blue);fill:none;stroke-width:1.5;filter:drop-shadow(0 0 6px var(--blue));}
+.ob-title{font-family:var(--display);font-size:30px;font-weight:700;letter-spacing:.15em;color:var(--blue);text-shadow:0 0 24px var(--blue-glow);}
+.ob-sub{font-family:var(--mono);font-size:9px;color:var(--text-dim);letter-spacing:.2em;margin-top:4px;}
+.ob-card{width:100%;background:var(--bg2);border:1px solid var(--border);padding:22px 20px;}
+.card-label{font-family:var(--mono);font-size:9px;color:var(--blue);letter-spacing:.2em;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.card-label::before{content:'';width:16px;height:1px;background:var(--blue);opacity:.4;}
+.f-lbl{font-family:var(--mono);font-size:9px;color:var(--text-dim);letter-spacing:.12em;text-transform:uppercase;margin-bottom:5px;}
+.f-in{width:100%;background:rgba(0,212,255,0.04);border:1px solid var(--border);color:var(--text);font-family:var(--body);font-size:15px;padding:11px 13px;outline:none;margin-bottom:13px;transition:border-color .2s;}
+.f-in:focus{border-color:rgba(0,212,255,.4);}
+.f-in::placeholder{color:rgba(232,240,255,.18);}
+textarea.f-in{resize:none;min-height:70px;line-height:1.5;}
+.f-hint{font-family:var(--mono);font-size:9px;color:var(--text-dim);margin-top:-9px;margin-bottom:13px;line-height:1.7;}
+.btn-p{width:100%;background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.3);color:var(--blue);font-family:var(--display);font-size:16px;font-weight:700;letter-spacing:.18em;padding:13px;cursor:pointer;transition:all .25s;text-transform:uppercase;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px));}
+.btn-p:hover:not(:disabled){background:rgba(0,212,255,.14);box-shadow:0 0 20px rgba(0,212,255,.18);}
+.btn-p:disabled{opacity:.3;cursor:not-allowed;}
+
+/* ── CLARIFY ── */
+#screen-clarify{justify-content:center;align-items:center;padding:28px 20px;gap:20px;overflow-y:auto;}
+.clarify-card{width:100%;background:var(--bg2);border:1px solid var(--border);padding:22px 20px;}
+.clarify-thinking{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:10px;color:rgba(0,212,255,.5);letter-spacing:.1em;padding:16px 0;}
+.q-block{margin-bottom:20px;animation:fadeSlide .4s ease both;}
+.q-text{font-family:var(--display);font-size:15px;font-weight:600;color:var(--text);line-height:1.4;margin-bottom:10px;letter-spacing:.02em;}
+.q-options{display:flex;flex-direction:column;gap:7px;}
+.q-opt{background:rgba(0,212,255,.04);border:1px solid var(--border);color:var(--text-dim);font-family:var(--body);font-size:13px;padding:10px 13px;cursor:pointer;transition:all .18s;text-align:left;clip-path:polygon(0 0,calc(100% - 7px) 0,100% 7px,100% 100%,7px 100%,0 calc(100% - 7px));}
+.q-opt:hover{border-color:rgba(0,212,255,.35);color:var(--text);}
+.q-opt.selected{background:rgba(0,212,255,.1);border-color:rgba(0,212,255,.5);color:var(--blue);}
+.q-opt.selected::before{content:'▸ ';}
+.q-or-input{width:100%;background:rgba(0,212,255,.03);border:1px solid var(--border);color:var(--text);font-family:var(--body);font-size:13px;padding:9px 12px;outline:none;margin-top:6px;transition:border-color .2s;}
+.q-or-input:focus{border-color:rgba(0,212,255,.4);}
+.q-or-input::placeholder{color:rgba(232,240,255,.18);font-size:12px;}
+.clarify-goal-echo{font-family:var(--mono);font-size:9px;color:rgba(255,215,0,.4);letter-spacing:.1em;padding:10px 14px;border:1px solid rgba(255,215,0,.1);background:rgba(255,215,0,.03);margin-bottom:16px;line-height:1.6;word-break:break-word;}
+
+/* ── GENERATING ── */
+#screen-generate{justify-content:center;align-items:center;padding:40px 24px;gap:22px;text-align:center;}
+.gen-ring{position:relative;width:76px;height:76px;margin:0 auto;}
+.gen-ring svg{width:76px;height:76px;}
+.gen-ring-inner{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
+.gen-ring-inner svg{width:28px;height:28px;stroke:var(--blue);fill:none;stroke-width:1.5;filter:drop-shadow(0 0 6px var(--blue));}
+.gen-title{font-family:var(--display);font-size:20px;font-weight:700;letter-spacing:.1em;color:var(--blue);}
+.gen-log{width:100%;max-width:340px;font-family:var(--mono);font-size:11px;color:var(--text-dim);line-height:2.2;text-align:left;}
+.gen-line{animation:fadeSlide .35s ease both;}
+.gen-line.ok{color:var(--green);opacity:.85;}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:translateY(0);}}
+.dots span{display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--blue);margin:0 3px;animation:dp 1.4s ease-in-out infinite;box-shadow:0 0 4px var(--blue);}
+.dots span:nth-child(2){animation-delay:.2s;}
+.dots span:nth-child(3){animation-delay:.4s;}
+@keyframes dp{0%,80%,100%{transform:scale(.5);opacity:.3;}40%{transform:scale(1);opacity:1;}}
+
+/* ── MAIN ── */
+#screen-main{flex-direction:column;}
+.hud{background:var(--bg2);border-bottom:1px solid var(--border);padding:9px 14px;display:flex;align-items:center;gap:11px;position:sticky;top:0;z-index:50;}
+.hud-hex{width:34px;height:34px;background:var(--blue-dim);border:1px solid var(--blue-glow);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.hud-rank{font-family:var(--display);font-size:13px;font-weight:700;}
+.hud-mid{flex:1;min-width:0;}
+.hud-name{font-family:var(--display);font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.hud-lv{font-family:var(--mono);font-size:8px;color:var(--text-dim);letter-spacing:.1em;}
+.hud-exp-wrap{flex-shrink:0;width:90px;}
+.hud-exp-txt{font-family:var(--mono);font-size:8px;color:rgba(0,212,255,.35);text-align:right;margin-bottom:3px;}
+.hud-bar{height:2px;background:rgba(255,255,255,.05);}
+.hud-fill{height:100%;background:linear-gradient(90deg,rgba(0,212,255,.5),var(--blue));box-shadow:0 0 5px var(--blue);transition:width .7s cubic-bezier(.4,0,.2,1);}
+.hud-reset{background:transparent;border:1px solid var(--border);color:var(--text-dim);font-family:var(--mono);font-size:8px;padding:5px 7px;cursor:pointer;letter-spacing:.1em;transition:all .2s;white-space:nowrap;}
+.hud-reset:hover{border-color:var(--red);color:var(--red);}
+.tab-bar{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:54px;z-index:49;}
+.tab{flex:1;padding:9px 4px;font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);background:transparent;border:none;cursor:pointer;transition:all .2s;border-bottom:2px solid transparent;}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue);}
+.tab-content{display:none;flex:1;overflow-y:auto;padding:14px;}
+.tab-content.active{display:block;}
+
+/* ── TODAY ── */
+#tab-today{padding:14px 14px 32px;}
+
+/* Goal strip */
+.goal-strip{background:var(--bg2);border:1px solid var(--border);padding:12px 15px;margin-bottom:14px;position:relative;overflow:hidden;}
+.goal-strip::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:linear-gradient(180deg,transparent,var(--gold),transparent);}
+.goal-label{font-family:var(--mono);font-size:9px;color:rgba(255,215,0,.45);letter-spacing:.18em;margin-bottom:4px;}
+.goal-text{font-family:var(--display);font-size:15px;font-weight:600;color:var(--gold);line-height:1.3;filter:drop-shadow(0 0 8px rgba(255,215,0,.2));}
+.prog-wrap{margin-top:9px;}
+.prog-labels{display:flex;justify-content:space-between;font-family:var(--mono);font-size:8px;color:rgba(255,215,0,.4);margin-bottom:4px;}
+.prog-track{height:2px;background:rgba(255,215,0,.08);}
+.prog-fill{height:100%;background:linear-gradient(90deg,rgba(255,215,0,.5),var(--gold));box-shadow:0 0 6px rgba(255,215,0,.3);transition:width .8s ease;}
+
+/* Quest cards */
+.quest-cards{display:flex;flex-direction:column;gap:14px;}
+
+.quest-card{background:var(--bg2);border:1px solid var(--border);position:relative;overflow:hidden;transition:border-color .3s;}
+.quest-card.main-quest{border-color:rgba(0,212,255,.25);}
+.quest-card.side-quest{border-color:rgba(255,215,0,.18);}
+.quest-card.cleared{border-color:rgba(0,255,136,.25);opacity:.6;}
+
+/* Top bar accent */
+.quest-card.main-quest::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--blue),transparent);}
+.quest-card.side-quest::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+.quest-card.cleared::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--green),transparent);}
+
+.quest-card-inner{padding:18px 18px 20px;}
+
+/* Card header row */
+.quest-type-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+.quest-type-badge{font-family:var(--mono);font-size:9px;letter-spacing:.15em;padding:3px 9px;border:1px solid;clip-path:polygon(0 0,calc(100% - 5px) 0,100% 5px,100% 100%,5px 100%,0 calc(100% - 5px));}
+.badge-main{color:var(--blue);border-color:rgba(0,212,255,.35);background:rgba(0,212,255,.08);}
+.badge-side{color:var(--gold);border-color:rgba(255,215,0,.3);background:rgba(255,215,0,.06);}
+.badge-cleared{color:var(--green);border-color:rgba(0,255,136,.3);background:rgba(0,255,136,.06);}
+.quest-exp{font-family:var(--mono);font-size:9px;color:rgba(255,215,0,.5);margin-left:auto;}
+.quest-phase-tag{font-family:var(--mono);font-size:8px;color:var(--text-dim);}
+
+/* Quest title — the big text */
+.quest-title{font-family:var(--display);font-size:21px;font-weight:700;color:var(--text);line-height:1.3;letter-spacing:.02em;margin-bottom:6px;}
+.quest-card.cleared .quest-title{text-decoration:line-through;color:var(--text-dim);}
+.quest-card.main-quest .quest-title{color:#f0f8ff;}
+.quest-card.side-quest .quest-title{color:rgba(255,240,180,.95);}
+
+.quest-subtitle{font-family:var(--mono);font-size:9px;color:var(--text-dim);line-height:1.6;margin-bottom:18px;}
+
+/* THE BIG BUTTON */
+.btn-complete{
+  width:100%;padding:16px;
+  font-family:var(--display);font-size:18px;font-weight:700;letter-spacing:.15em;
+  text-transform:uppercase;cursor:pointer;border:none;
+  position:relative;overflow:hidden;transition:all .2s;
+}
+.btn-complete-main{
+  background:linear-gradient(135deg,rgba(0,212,255,.15),rgba(0,212,255,.08));
+  border:1px solid rgba(0,212,255,.4);color:var(--blue);
+  clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px));
+}
+.btn-complete-main:hover:not(:disabled){
+  background:linear-gradient(135deg,rgba(0,212,255,.25),rgba(0,212,255,.12));
+  box-shadow:0 0 28px rgba(0,212,255,.25),inset 0 0 20px rgba(0,212,255,.04);
+  border-color:var(--blue);
+}
+.btn-complete-side{
+  background:linear-gradient(135deg,rgba(255,215,0,.12),rgba(255,215,0,.06));
+  border:1px solid rgba(255,215,0,.35);color:var(--gold);
+  clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px));
+}
+.btn-complete-side:hover:not(:disabled){
+  background:linear-gradient(135deg,rgba(255,215,0,.2),rgba(255,215,0,.1));
+  box-shadow:0 0 28px rgba(255,215,0,.2),inset 0 0 20px rgba(255,215,0,.03);
+  border-color:var(--gold);
+}
+.btn-complete:active:not(:disabled){transform:scale(.98);}
+.btn-complete:disabled{opacity:.35;cursor:not-allowed;}
+.btn-complete::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.04) 0%,transparent 60%);
+  pointer-events:none;
+}
+
+/* Cleared state button */
+.btn-cleared{
+  width:100%;padding:13px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.15em;
+  background:rgba(0,255,136,.06);border:1px solid rgba(0,255,136,.25);
+  color:var(--green);cursor:default;
+  clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));
+}
+
+/* Empty state */
+.quest-empty{text-align:center;padding:40px 20px;font-family:var(--mono);font-size:10px;color:var(--text-dim);line-height:2.4;}
+
+/* Next quest appear animation */
+@keyframes questAppear{
+  from{opacity:0;transform:translateY(12px);}
+  to{opacity:1;transform:translateY(0);}
+}
+.quest-card.appearing{animation:questAppear .45s cubic-bezier(.2,0,.2,1) both;}
+
+/* Streak dots (kept for habit card) */
+.streak-chain{display:flex;gap:3px;margin-top:4px;}
+.s-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,215,0,.12);}
+.s-dot.on{background:var(--gold);box-shadow:0 0 4px rgba(255,215,0,.4);}
+
+/* ── ROADMAP ── */
+.phase-card{background:var(--bg2);border:1px solid var(--border);margin-bottom:10px;}
+.phase-hdr{padding:12px 14px;display:flex;align-items:center;gap:11px;cursor:pointer;}
+.phase-num{width:28px;height:28px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;color:var(--blue);flex-shrink:0;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);}
+.phase-num.ph-active{background:var(--blue-dim);border-color:var(--blue-glow);box-shadow:0 0 10px rgba(0,212,255,.2);}
+.phase-num.ph-done{background:rgba(0,255,136,.07);border-color:rgba(0,255,136,.3);color:var(--green);}
+.phase-info{flex:1;min-width:0;}
+.phase-title{font-family:var(--display);font-size:15px;font-weight:600;letter-spacing:.04em;}
+.phase-meta{font-family:var(--mono);font-size:9px;color:var(--text-dim);margin-top:2px;}
+.ph-badge{font-family:var(--mono);font-size:9px;padding:3px 8px;border:1px solid;clip-path:polygon(0 0,calc(100% - 5px) 0,100% 5px,100% 100%,5px 100%,0 calc(100% - 5px));white-space:nowrap;flex-shrink:0;}
+.ph-badge.cur{color:var(--blue);border-color:rgba(0,212,255,.3);background:var(--blue-dim);}
+.ph-badge.lock{color:var(--text-dim);border-color:var(--border);}
+.ph-badge.done{color:var(--green);border-color:rgba(0,255,136,.3);background:rgba(0,255,136,.05);}
+.phase-body{padding:0 14px 13px;border-top:1px solid var(--border);display:none;}
+.phase-body.open{display:block;}
+.phase-desc{font-family:var(--body);font-size:12px;color:var(--text-dim);padding:10px 0 8px;line-height:1.6;font-style:italic;}
+.ph-task{padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);font-family:var(--body);font-size:13px;color:var(--text-dim);display:flex;align-items:flex-start;gap:8px;}
+.ph-task:last-child{border-bottom:none;}
+.ph-task-dot{font-family:var(--mono);font-size:9px;color:var(--border);flex-shrink:0;margin-top:2px;}
+.ph-task.done-t{opacity:.35;text-decoration:line-through;}
+
+/* ── STATS ── */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
+.stat-card{background:var(--bg2);border:1px solid var(--border);padding:13px 15px;}
+.stat-val{font-family:var(--display);font-size:28px;font-weight:700;color:var(--text);line-height:1;}
+.stat-lbl{font-family:var(--mono);font-size:8px;color:var(--text-dim);letter-spacing:.12em;margin-top:4px;}
+.stat-sub{font-family:var(--mono);font-size:10px;color:var(--blue);margin-top:2px;}
+.log-box{background:var(--bg2);border:1px solid var(--border);padding:11px 14px;max-height:280px;overflow-y:auto;}
+.log-row{padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);display:flex;gap:9px;align-items:flex-start;}
+.log-row:last-child{border-bottom:none;}
+.log-t{font-family:var(--mono);font-size:8px;color:rgba(0,212,255,.3);flex-shrink:0;margin-top:1px;}
+.log-m{font-family:var(--mono);font-size:10px;line-height:1.5;}
+.log-m.reward{color:var(--gold);}
+.log-m.system{color:rgba(0,212,255,.65);}
+.log-m.habit{color:var(--green);opacity:.8;}
+.log-m.info{color:var(--text-dim);}
+
+/* ── LEVEL UP ── */
+#lu{position:fixed;inset:0;background:rgba(5,10,20,.94);z-index:200;display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:32px;}
+#lu.show{display:flex;animation:luIn .4s ease;}
+@keyframes luIn{from{opacity:0;}to{opacity:1;}}
+.lu-hex{width:96px;height:96px;background:var(--blue-dim);border:2px solid var(--blue);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);display:flex;align-items:center;justify-content:center;animation:luP 1s ease-in-out infinite alternate;box-shadow:0 0 40px rgba(0,212,255,.35);}
+@keyframes luP{from{box-shadow:0 0 20px rgba(0,212,255,.25);}to{box-shadow:0 0 60px rgba(0,212,255,.55);}}
+.lu-lv{font-family:var(--display);font-size:42px;font-weight:700;color:var(--blue);text-shadow:0 0 30px var(--blue-glow);}
+.lu-title{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:.15em;}
+.lu-rank{font-family:var(--mono);font-size:11px;letter-spacing:.2em;}
+.lu-msg{font-family:var(--mono);font-size:9px;color:rgba(0,212,255,.45);letter-spacing:.1em;}
+.lu-btn{background:transparent;border:1px solid var(--border);color:var(--text-dim);font-family:var(--mono);font-size:10px;padding:9px 22px;cursor:pointer;letter-spacing:.1em;transition:all .2s;margin-top:4px;}
+.lu-btn:hover{border-color:var(--blue);color:var(--blue);}
+
+/* ── MISC ── */
+.flash-el{position:fixed;inset:0;background:rgba(0,212,255,.05);pointer-events:none;z-index:100;animation:fOut .5s ease forwards;}
+@keyframes fOut{from{opacity:1;}to{opacity:0;}}
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--blue-glow);color:var(--blue);font-family:var(--mono);font-size:10px;padding:9px 18px;z-index:300;display:none;letter-spacing:.1em;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));white-space:nowrap;max-width:90vw;overflow:hidden;text-overflow:ellipsis;}
+#toast.show{display:block;animation:tIn .25s ease;}
+@keyframes tIn{from{opacity:0;transform:translateX(-50%) translateY(6px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
+.empty{text-align:center;padding:36px 20px;font-family:var(--mono);font-size:10px;color:var(--text-dim);line-height:2.2;letter-spacing:.05em;}
+.rank-E{color:#888;}.rank-D{color:#4db8ff;}.rank-C{color:#66ff99;}.rank-B{color:#aa44ff;}.rank-A{color:#ff9900;}
+.rank-S{color:var(--red);text-shadow:0 0 8px rgba(255,51,102,.5);}
+
+/* Notif banner */
+#notif-banner{display:none;background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.2);border-left:2px solid var(--blue);padding:11px 14px;margin-bottom:14px;gap:12px;align-items:center;}
+#notif-banner.show{display:flex;}
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="bg-vignette"></div>
+<div id="app"><div class="shell">
+
+<!-- ONBOARD -->
+<div id="screen-onboard" class="screen active">
+  <div class="ob-logo">
+    <div class="ob-hex"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+    <div class="ob-title">SOLOQUEST</div>
+    <div class="ob-sub">THE SYSTEM // REAL-LIFE RPG</div>
+  </div>
+  <div class="ob-card clip">
+    <div class="card-label">HUNTER REGISTRATION</div>
+    <div class="f-lbl">Hunter Name</div>
+    <input class="f-in clip-sm" id="ob-name" type="text" placeholder="Your name..." maxlength="30" autocomplete="off"/>
+    <div class="f-lbl">Ultimate Goal</div>
+    <textarea class="f-in clip-sm" id="ob-goal" placeholder="What do you want to achieve? Be specific.&#10;e.g. Earn $10,000 freelancing by June" rows="3" maxlength="300"></textarea>
+    <div class="f-hint">▸ The System will ask 2 questions then generate your complete roadmap, phases, daily tasks and habits.</div>
+    <div class="f-lbl">Target Deadline</div>
+    <input class="f-in clip-sm" id="ob-deadline" type="date"/>
+    <button class="btn-p" id="ob-submit" disabled>▶ INITIALIZE THE SYSTEM</button>
+  </div>
+</div>
+
+<!-- CLARIFY -->
+<div id="screen-clarify" class="screen">
+  <div class="ob-logo">
+    <div class="ob-hex"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+    <div class="ob-title">THE SYSTEM</div>
+    <div class="ob-sub">CALIBRATING YOUR MISSION</div>
+  </div>
+  <div class="clarify-card clip">
+    <div class="card-label">SYSTEM INQUIRY</div>
+    <div class="clarify-goal-echo" id="clarify-goal-echo">GOAL: —</div>
+    <div id="clarify-body">
+      <div class="clarify-thinking">
+        <div class="dots"><span></span><span></span><span></span></div>
+        ANALYZING OBJECTIVE...
+      </div>
+    </div>
+    <button class="btn-p" id="clarify-submit" disabled style="margin-top:18px;" onclick="submitClarify()">▶ CONFIRM &amp; BUILD ROADMAP</button>
+  </div>
+</div>
+
+<!-- GENERATING -->
+<div id="screen-generate" class="screen">
+  <div class="gen-ring">
+    <svg viewBox="0 0 76 76">
+      <polygon points="38,3 72,21 72,55 38,73 4,55 4,21" fill="none" stroke="rgba(0,212,255,.1)" stroke-width="1"/>
+      <polygon points="38,3 72,21 72,55 38,73 4,55 4,21" fill="none" stroke="rgba(0,212,255,.55)" stroke-width="1.5" stroke-dasharray="170" stroke-dashoffset="0">
+        <animate attributeName="stroke-dashoffset" values="0;-170;0" dur="2.8s" repeatCount="indefinite"/>
+      </polygon>
+    </svg>
+    <div class="gen-ring-inner"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+  </div>
+  <div class="gen-title">SYSTEM ANALYZING...</div>
+  <div class="gen-log" id="gen-log"></div>
+  <div class="dots"><span></span><span></span><span></span></div>
+</div>
+
+<!-- MAIN -->
+<div id="screen-main" class="screen">
+  <div class="hud">
+    <div class="hud-hex"><span class="hud-rank" id="hud-rank">E</span></div>
+    <div class="hud-mid">
+      <div class="hud-name" id="hud-name">Hunter</div>
+      <div class="hud-lv" id="hud-lv">LV.1 · E-RANK</div>
+    </div>
+    <div class="hud-exp-wrap">
+      <div class="hud-exp-txt" id="hud-exp-txt">0/100</div>
+      <div class="hud-bar"><div class="hud-fill" id="hud-fill" style="width:0%"></div></div>
+    </div>
+    <button class="hud-reset" onclick="confirmReset()">RESET</button>
+  </div>
+  <div class="tab-bar">
+    <button class="tab active" onclick="switchTab('today')">TODAY</button>
+    <button class="tab" onclick="switchTab('roadmap')">ROADMAP</button>
+    <button class="tab" onclick="switchTab('stats')">STATS</button>
+  </div>
+
+  <!-- TODAY -->
+  <div id="tab-today" class="tab-content active">
+    <div id="notif-banner">
+      <span style="font-size:18px;flex-shrink:0;">⚡</span>
+      <div style="flex:1;">
+        <div style="font-family:var(--display);font-size:13px;font-weight:600;color:var(--blue);letter-spacing:.05em;">MORNING BRIEFING</div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--text-dim);margin-top:2px;line-height:1.6;" id="notif-sub-text">The System will alert you at 7:00 AM daily.</div>
+      </div>
+      <button onclick="requestNotifPermission()" id="notif-btn" style="background:var(--blue-dim);border:1px solid rgba(0,212,255,.3);color:var(--blue);font-family:var(--mono);font-size:9px;padding:7px 10px;cursor:pointer;letter-spacing:.1em;white-space:nowrap;clip-path:polygon(0 0,calc(100% - 5px) 0,100% 5px,100% 100%,5px 100%,0 calc(100% - 5px));">ENABLE</button>
+      <button onclick="this.parentElement.classList.remove('show')" style="background:transparent;border:none;color:var(--text-dim);font-size:18px;cursor:pointer;padding:2px 6px;flex-shrink:0;">×</button>
+    </div>
+    <div class="goal-strip">
+      <div class="goal-label">▸ ULTIMATE OBJECTIVE</div>
+      <div class="goal-text" id="goal-text">—</div>
+      <div class="prog-wrap">
+        <div class="prog-labels"><span>PROGRESS</span><span id="prog-pct">0%</span></div>
+        <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+      </div>
+    </div>
+    <div class="quest-cards" id="quest-cards"></div>
+  </div>
+
+  <!-- ROADMAP -->
+  <div id="tab-roadmap" class="tab-content">
+    <div class="sec-hdr" style="margin-bottom:12px;">CAMPAIGN ROADMAP</div>
+    <div id="roadmap-list"></div>
+  </div>
+
+  <!-- STATS -->
+  <div id="tab-stats" class="tab-content">
+    <div class="stat-grid">
+      <div class="stat-card clip-sm"><div class="stat-val" id="st-lv">1</div><div class="stat-lbl">LEVEL</div><div class="stat-sub" id="st-rank">E-RANK</div></div>
+      <div class="stat-card clip-sm"><div class="stat-val" id="st-done">0</div><div class="stat-lbl">TASKS CLEARED</div><div class="stat-sub" id="st-texp">0 TOTAL EXP</div></div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-card clip-sm"><div class="stat-val" id="st-streak">0</div><div class="stat-lbl">BEST STREAK</div><div class="stat-sub">DAYS</div></div>
+      <div class="stat-card clip-sm"><div class="stat-val" id="st-habits">0</div><div class="stat-lbl">HABITS LOGGED</div><div class="stat-sub">ALL TIME</div></div>
+    </div>
+    <div class="sec-hdr" style="margin-top:6px;">SYSTEM LOG</div>
+    <div class="log-box" id="log-box"></div>
+  </div>
+</div>
+
+</div></div>
+
+<!-- Level Up -->
+<div id="lu">
+  <div class="lu-hex"><span class="lu-lv" id="lu-lv">2</span></div>
+  <div class="lu-title">LEVEL UP</div>
+  <div class="lu-rank" id="lu-rank">RANK: E</div>
+  <div class="lu-msg">THE SYSTEM ACKNOWLEDGES YOUR GROWTH</div>
+  <button class="lu-btn" onclick="dismissLU()">[ CONTINUE ]</button>
+</div>
+<div id="toast"></div>
+
+<script>
+const KEY='sq_v4', EPL=100, EXP_T=15, EXP_H=8;
+const RANKS=[[1,'E'],[5,'D'],[10,'C'],[20,'B'],[35,'A'],[50,'S']];
+function rank(lv){let r='E';for(const[t,n]of RANKS){if(lv>=t)r=n;}return r;}
+
+// ── XSS SANITIZER ──
+function esc(str){
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#x27;');
+}
+
+let S={
+  onboarded:false,playerName:'',ultimateGoal:'',deadline:'',clarifyContext:'',
+  level:1,exp:0,totalExp:0,tasksCompleted:0,habitsLogged:0,
+  bestStreak:0,currentStreak:0,lastActive:'',lastReset:'',
+  phases:[],habits:[],todayTasks:[],
+  log:[],luPending:false,luTo:1,todayExp:0,notifEnabled:false
+};
+
+function save(){localStorage.setItem(KEY,JSON.stringify(S));}
+function load(){try{const d=JSON.parse(localStorage.getItem(KEY)||'null');if(d)S={...S,...d};}catch(e){}}
+
+function addLog(msg,type='info'){
+  const n=new Date();
+  S.log.unshift({t:`${pad(n.getHours())}:${pad(n.getMinutes())}`,msg,type});
+  S.log=S.log.slice(0,60);
+}
+const pad=n=>String(n).padStart(2,'0');
+function doFlash(){const e=document.createElement('div');e.className='flash-el';document.body.appendChild(e);setTimeout(()=>e.remove(),600);}
+function showToast(msg,d=2200){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('show');
+  clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),d);
+}
+
+function gainExp(n){
+  S.exp+=n;S.totalExp+=n;S.todayExp+=n;
+  let leveled=false;
+  while(S.exp>=EPL){S.exp-=EPL;S.level++;leveled=true;S.luPending=true;S.luTo=S.level;addLog(`⬆ LEVEL UP → LV.${S.level} [${rank(S.level)}-RANK]`,'reward');}
+  return leveled;
+}
+
+function checkReset(){
+  const today=new Date().toISOString().slice(0,10);
+  if(S.lastReset===today)return;
+  const yest=new Date(Date.now()-86400000).toISOString().slice(0,10);
+  if(S.lastReset===yest){S.currentStreak++;if(S.currentStreak>S.bestStreak)S.bestStreak=S.currentStreak;}
+  else if(S.lastReset&&S.lastReset!==today)S.currentStreak=0;
+  S.todayExp=0;
+  S.todayTasks=makeTodayTasks();
+  S.habits.forEach(h=>h.doneToday=false);
+  S.lastReset=today;
+  addLog(`New day initialized. ${S.todayTasks.length} tasks issued.`,'system');
+}
+
+function makeTodayTasks(){
+  const p=S.phases.find(p=>p.isActive&&!p.isDone);
+  if(!p)return[];
+  return p.tasks.filter(t=>!t.done).slice(0,3).map(t=>({id:t.id,title:t.title,phaseTitle:p.title,done:false,exp:EXP_T}));
+}
+
+// ── ONBOARD ──
+const obN=document.getElementById('ob-name');
+const obG=document.getElementById('ob-goal');
+const obD=document.getElementById('ob-deadline');
+const obS=document.getElementById('ob-submit');
+const def3=new Date();def3.setMonth(def3.getMonth()+3);
+obD.value=def3.toISOString().slice(0,10);
+const chkForm=()=>obS.disabled=!(obN.value.trim()&&obG.value.trim());
+obN.addEventListener('input',chkForm);obG.addEventListener('input',chkForm);
+obS.addEventListener('click',()=>{
+  if(!obN.value.trim()||!obG.value.trim())return;
+  S.playerName=obN.value.trim().slice(0,30);
+  S.ultimateGoal=obG.value.trim().slice(0,300);
+  S.deadline=obD.value;
+  goToClarify();
+});
+
+// ── CLARIFY ──
+let clarifyAnswers={};
+let clarifyQuestions=[];
+
+async function goToClarify(){
+  showScr('screen-clarify');
+  document.getElementById('clarify-goal-echo').textContent=`GOAL: ${S.ultimateGoal}`;
+  document.getElementById('clarify-submit').disabled=true;
+  clarifyAnswers={};clarifyQuestions=[];
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',max_tokens:400,
+        system:`You are THE SYSTEM from Solo Leveling. Generate exactly 2 sharp clarifying questions to build a precise personalized roadmap.
+Respond ONLY with valid JSON (no markdown):
+{"questions":[{"question":"Short direct question max 10 words","options":["A","B","C","D"]},{"question":"Short direct question max 10 words","options":["A","B","C","D"]}]}
+Rules: specific to THIS goal, meaningfully different options, cover HOW and WHERE they currently are. Max 4 options each.`,
+        messages:[{role:'user',content:`Hunter: ${S.playerName}\nGoal: "${S.ultimateGoal}"\nDeadline: ${S.deadline}`}]
+      })
+    });
+    const data=await res.json();
+    const raw=data.content?.find(b=>b.type==='text')?.text||'{}';
+    const parsed=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    clarifyQuestions=parsed.questions||[];
+  }catch(e){
+    clarifyQuestions=buildFallbackQ(S.ultimateGoal);
+  }
+  renderClarifyQ();
+}
+
+function buildFallbackQ(goal){
+  const g=goal.toLowerCase();
+  if(g.match(/earn|money|income|\$|revenue|freelan|client/))
+    return[{question:"How do you plan to earn it?",options:["Freelancing / Consulting","Side business / Product","Job / Promotion","Investments / Trading"]},
+           {question:"What is your current starting point?",options:["No income source yet","Have skills, no clients","Already earning, want to scale","Have a business, need growth"]}];
+  if(g.match(/run|marathon|fitness|weight|muscle|gym|sport/))
+    return[{question:"What is your current fitness level?",options:["Complete beginner","Occasional exercise","Train 2-3x per week","Already athletic, want to peak"]},
+           {question:"What is your main obstacle?",options:["No consistency","Lack of knowledge","Time constraints","Physical limitations"]}];
+  if(g.match(/learn|skill|code|language|study|course/))
+    return[{question:"What is your current experience level?",options:["Absolute beginner","Some basics learned","Intermediate, want to advance","Advanced, aiming for mastery"]},
+           {question:"How much time can you dedicate daily?",options:["15-30 minutes","30-60 minutes","1-2 hours","2+ hours"]}];
+  return[{question:"What is your current starting point?",options:["Complete beginner","Some experience","Intermediate level","Already started, need structure"]},
+         {question:"What is your biggest challenge?",options:["Staying consistent","Lack of knowledge","Limited time","Staying motivated"]}];
+}
+
+function renderClarifyQ(){
+  const body=document.getElementById('clarify-body');
+  // Build DOM safely — no innerHTML with AI content
+  body.innerHTML='';
+  clarifyQuestions.forEach((q,qi)=>{
+    const block=document.createElement('div');
+    block.className='q-block';
+    block.id=`qblock-${qi}`;
+    block.style.animationDelay=`${qi*0.15}s`;
+
+    const qText=document.createElement('div');
+    qText.className='q-text';
+    qText.textContent=q.question; // textContent — safe
+    block.appendChild(qText);
+
+    const opts=document.createElement('div');
+    opts.className='q-options';
+
+    q.options.forEach(opt=>{
+      const btn=document.createElement('button');
+      btn.className='q-opt';
+      btn.textContent=opt; // textContent — safe
+      btn.addEventListener('click',()=>selectOpt(qi,opt,btn));
+      opts.appendChild(btn);
+    });
+
+    const customIn=document.createElement('input');
+    customIn.className='q-or-input';
+    customIn.id=`q-custom-${qi}`;
+    customIn.placeholder='Or type your own answer...';
+    customIn.addEventListener('input',()=>handleCustomInput(qi,customIn.value));
+    opts.appendChild(customIn);
+
+    block.appendChild(opts);
+    body.appendChild(block);
+  });
+}
+
+function selectOpt(qi,value,el){
+  document.getElementById(`qblock-${qi}`).querySelectorAll('.q-opt').forEach(b=>b.classList.remove('selected'));
+  const ci=document.getElementById(`q-custom-${qi}`);
+  if(ci)ci.value='';
+  el.classList.add('selected');
+  clarifyAnswers[`q${qi}`]=value;
+  chkClarify();
+}
+
+function handleCustomInput(qi,value){
+  document.getElementById(`qblock-${qi}`).querySelectorAll('.q-opt').forEach(b=>b.classList.remove('selected'));
+  if(value.trim())clarifyAnswers[`q${qi}`]=value.trim().slice(0,100);
+  else delete clarifyAnswers[`q${qi}`];
+  chkClarify();
+}
+
+function chkClarify(){
+  document.getElementById('clarify-submit').disabled=!clarifyQuestions.every((_,i)=>clarifyAnswers[`q${i}`]);
+}
+
+function submitClarify(){
+  S.clarifyContext=clarifyQuestions.map((q,i)=>`${q.question} → ${clarifyAnswers[`q${i}`]}`).join('\n');
+  startGen();
+}
+
+// ── SCREENS ──
+function showScr(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+
+// ── GENERATION ──
+const genLogEl=document.getElementById('gen-log');
+function gLine(msg,ok=false){
+  const e=document.createElement('div');e.className='gen-line'+(ok?' ok':'');
+  e.textContent=(ok?'✓ ':'▸ ')+msg;genLogEl.appendChild(e);
+}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+async function startGen(){
+  showScr('screen-generate');
+  gLine('Processing hunter profile...');await sleep(500);
+  gLine('Applying mission context...');await sleep(500);
+  gLine('Building personalized roadmap...');
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',max_tokens:1200,
+        system:`You are THE SYSTEM from Solo Leveling. Generate a precise actionable roadmap.
+Respond ONLY with valid JSON (no markdown):
+{"phases":[{"id":"p1","title":"2-4 word name","description":"One direct sentence.","durationWeeks":3,"tasks":[{"id":"t1","title":"Specific actionable task under 12 words"}]}],"habits":[{"id":"h1","name":"Daily habit under 6 words"}]}
+Rules: 3-5 sequential phases, 5-7 tasks per phase, 3-5 daily habits essential to this specific goal.`,
+        messages:[{role:'user',content:`Hunter: ${S.playerName}\nGoal: "${S.ultimateGoal}"\nDeadline: ${S.deadline}\nContext:\n${S.clarifyContext||'None'}\n\nGenerate roadmap.`}]
+      })
+    });
+    const data=await res.json();
+    const raw=data.content?.find(b=>b.type==='text')?.text||'{}';
+    const parsed=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    await sleep(300);gLine('Calibrating daily habits',true);
+    await sleep(300);gLine('Issuing first mission briefing',true);
+    await sleep(400);
+    applyData(parsed);
+  }catch(e){
+    gLine('Using baseline protocol',true);await sleep(700);
+    applyData(fallback());
+  }
+}
+
+function applyData(data){
+  S.phases=(data.phases||[]).map((p,i)=>({...p,tasks:(p.tasks||[]).map(t=>({...t,done:false})),isActive:i===0,isDone:false}));
+  S.habits=(data.habits||[]).map(h=>({...h,streak:0,history:[],doneToday:false}));
+  S.onboarded=true;S.lastReset='';
+  addLog(`System initialized. Goal: "${S.ultimateGoal}"`,'system');
+  addLog(`${S.phases.length} phases, ${S.habits.length} habits assigned.`,'system');
+  checkReset();save();launchApp();
+}
+
+function fallback(){
+  return{phases:[
+    {id:'p1',title:'Foundation',description:'Establish baseline disciplines.',durationWeeks:3,tasks:[
+      {id:'t1',title:'Define your current baseline and starting metrics'},
+      {id:'t2',title:'Research top performers in your domain'},
+      {id:'t3',title:'Create your weekly schedule and action plan'},
+      {id:'t4',title:'Set up your progress tracking system'},
+      {id:'t5',title:'Complete your first full execution session'}]},
+    {id:'p2',title:'Development',description:'Build core competency through deliberate practice.',durationWeeks:5,tasks:[
+      {id:'t6',title:'Complete 10 focused practice sessions'},
+      {id:'t7',title:'Identify and eliminate your weakest area'},
+      {id:'t8',title:'Find a mentor or accountability partner'},
+      {id:'t9',title:'Reach 50% of your target metric'},
+      {id:'t10',title:'Conduct a midpoint review and adjust'}]},
+    {id:'p3',title:'Mastery',description:'Peak performance — execute and deliver.',durationWeeks:4,tasks:[
+      {id:'t11',title:'Complete a full rehearsal or simulation'},
+      {id:'t12',title:'Optimize your peak performance routine'},
+      {id:'t13',title:'Eliminate final gaps in preparation'},
+      {id:'t14',title:'Execute the final challenge or deliverable'}]}],
+  habits:[
+    {id:'h1',name:'Morning preparation routine'},
+    {id:'h2',name:'Daily focused practice block'},
+    {id:'h3',name:'Review progress and next steps'},
+    {id:'h4',name:'Sleep 7-8 hours'}]};
+}
+
+// ── LAUNCH ──
+function launchApp(){
+  showScr('screen-main');
+  renderAll();
+  if(S.luPending)showLU();
+  setTimeout(checkNotifState,800);
+}
+
+function renderAll(){renderHUD();renderToday();renderRoadmap();renderStats();}
+
+function renderHUD(){
+  const r=rank(S.level);
+  document.getElementById('hud-rank').textContent=r;
+  document.getElementById('hud-rank').className=`hud-rank rank-${r}`;
+  document.getElementById('hud-name').textContent=S.playerName;
+  document.getElementById('hud-lv').textContent=`LV.${S.level} · ${r}-RANK`;
+  document.getElementById('hud-exp-txt').textContent=`${S.exp}/${EPL}`;
+  document.getElementById('hud-fill').style.width=`${(S.exp/EPL)*100}%`;
+}
+
+function renderToday(){
+  document.getElementById('goal-text').textContent=S.ultimateGoal;
+  const total=S.phases.reduce((a,p)=>a+p.tasks.length,0);
+  const done=S.phases.reduce((a,p)=>a+p.tasks.filter(t=>t.done).length,0);
+  const pct=total?Math.round(done/total*100):0;
+  document.getElementById('prog-pct').textContent=pct+'%';
+  document.getElementById('prog-fill').style.width=pct+'%';
+  renderQuestCards();
+}
+
+function renderQuestCards(){
+  const container=document.getElementById('quest-cards');
+  container.innerHTML='';
+
+  // ── CARD 1: MAIN QUEST — current task from active phase ──
+  const mainTask=S.todayTasks.find(t=>!t.done)||S.todayTasks[0];
+  const mainCard=buildMainQuestCard(mainTask);
+  container.appendChild(mainCard);
+
+  // ── CARD 2: SIDE QUEST — current undone habit ──
+  const sideHabit=S.habits.find(h=>!h.doneToday)||S.habits[0];
+  const sideCard=buildSideQuestCard(sideHabit);
+  container.appendChild(sideCard);
+}
+
+function buildMainQuestCard(task){
+  const card=document.createElement('div');
+  const cleared=!task||task.done;
+  card.className='quest-card main-quest'+(cleared?' cleared':'');
+  const inner=document.createElement('div');inner.className='quest-card-inner';
+
+  // Type badge row
+  const typeRow=document.createElement('div');typeRow.className='quest-type-row';
+  const badge=document.createElement('span');
+  badge.className='quest-type-badge '+(cleared?'badge-cleared':'badge-main');
+  badge.textContent=cleared?'COMPLETED':'MAIN QUEST';
+  typeRow.appendChild(badge);
+  if(task){
+    const phase=document.createElement('span');phase.className='quest-phase-tag';phase.textContent=task.phaseTitle;
+    const exp=document.createElement('span');exp.className='quest-exp';exp.textContent=`+${task.exp} EXP`;
+    typeRow.appendChild(phase);typeRow.appendChild(exp);
+  }
+  inner.appendChild(typeRow);
+
+  // Title
+  const title=document.createElement('div');title.className='quest-title';
+  title.textContent=task?task.title:(S.phases.every(p=>p.isDone)?'All Campaigns Complete':'No active tasks');
+  inner.appendChild(title);
+
+  // Subtitle
+  const sub=document.createElement('div');sub.className='quest-subtitle';
+  sub.textContent=cleared
+    ?'Quest cleared. The System records your progress.'
+    :'Complete this task to advance your campaign.';
+  inner.appendChild(sub);
+
+  // Button
+  if(cleared){
+    const btn=document.createElement('div');btn.className='btn-cleared';
+    btn.textContent='✓ QUEST CLEARED';inner.appendChild(btn);
+  } else if(task){
+    const btn=document.createElement('button');
+    btn.className='btn-complete btn-complete-main';
+    btn.textContent='▶ COMPLETE QUEST';
+    btn.addEventListener('click',()=>completeMainQuest(task.id));
+    inner.appendChild(btn);
+  }
+  card.appendChild(inner);
+  return card;
+}
+
+function buildSideQuestCard(habit){
+  const card=document.createElement('div');
+  const cleared=!habit||habit.doneToday;
+  card.className='quest-card side-quest'+(cleared?' cleared':'');
+  const inner=document.createElement('div');inner.className='quest-card-inner';
+
+  // Type badge row
+  const typeRow=document.createElement('div');typeRow.className='quest-type-row';
+  const badge=document.createElement('span');
+  badge.className='quest-type-badge '+(cleared?'badge-cleared':'badge-side');
+  badge.textContent=cleared?'COMPLETED':'SIDE QUEST';
+  typeRow.appendChild(badge);
+  if(habit){
+    const streak=document.createElement('span');streak.className='quest-phase-tag';
+    streak.textContent=habit.streak>0?`🔥 ${habit.streak} day streak`:'Start your streak';
+    const exp=document.createElement('span');exp.className='quest-exp';exp.textContent=`+${EXP_H} EXP`;
+    typeRow.appendChild(streak);typeRow.appendChild(exp);
+  }
+  inner.appendChild(typeRow);
+
+  // Title
+  const title=document.createElement('div');title.className='quest-title';
+  title.textContent=habit?habit.name:'No habits assigned';
+  inner.appendChild(title);
+
+  // Streak dots
+  if(habit){
+    const dots=document.createElement('div');dots.className='streak-chain';dots.style.marginBottom='14px';
+    Array.from({length:7},(_,i)=>{const d=document.createElement('div');d.className='s-dot'+(i<Math.min(habit.streak,7)?' on':'');dots.appendChild(d);});
+    inner.appendChild(dots);
+  }
+
+  // Subtitle
+  const sub=document.createElement('div');sub.className='quest-subtitle';
+  sub.textContent=cleared?'Habit logged. Consistency builds the hunter.':'Daily habits compound over time. Do it now.';
+  inner.appendChild(sub);
+
+  // Button
+  if(cleared){
+    const btn=document.createElement('div');btn.className='btn-cleared';
+    btn.textContent='✓ SIDE QUEST CLEARED';inner.appendChild(btn);
+  } else if(habit){
+    const btn=document.createElement('button');
+    btn.className='btn-complete btn-complete-side';
+    btn.textContent='▶ COMPLETE SIDE QUEST';
+    btn.addEventListener('click',()=>completeSideQuest(habit.id));
+    inner.appendChild(btn);
+  }
+  card.appendChild(inner);
+  return card;
+}
+
+function completeMainQuest(id){
+  const t=S.todayTasks.find(x=>x.id===id);
+  if(!t||t.done)return;
+  t.done=true;
+  for(const p of S.phases){const pt=p.tasks.find(x=>x.id===id);if(pt){pt.done=true;break;}}
+  S.tasksCompleted++;
+  const lv=gainExp(t.exp);
+  addLog(`✓ "${t.title}" +${t.exp} EXP`,'reward');
+  doFlash();checkPhaseAdvance();save();
+
+  // Show cleared state briefly, then animate next quest in
+  const card=document.querySelector('.quest-card.main-quest');
+  if(card){card.classList.add('cleared');}
+  setTimeout(()=>{
+    renderAll();
+    const next=document.querySelector('.quest-card.main-quest:not(.cleared)');
+    if(next)next.classList.add('appearing');
+  },400);
+
+  if(lv)setTimeout(showLU,450);
+  else showToast(`QUEST CLEARED · +${t.exp} EXP`);
+}
+
+function completeSideQuest(id){
+  const h=S.habits.find(x=>x.id===id);
+  if(!h||h.doneToday)return;
+  h.doneToday=true;h.streak++;
+  if(h.streak>S.bestStreak)S.bestStreak=h.streak;
+  h.history.push(new Date().toISOString().slice(0,10));
+  S.habitsLogged++;
+  const lv=gainExp(EXP_H);
+  addLog(`◉ "${h.name}" streak ${h.streak} +${EXP_H} EXP`,'habit');
+  doFlash();save();
+
+  const card=document.querySelector('.quest-card.side-quest');
+  if(card){card.classList.add('cleared');}
+  setTimeout(()=>{
+    renderAll();
+    const next=document.querySelector('.quest-card.side-quest:not(.cleared)');
+    if(next)next.classList.add('appearing');
+  },400);
+
+  if(lv)setTimeout(showLU,450);
+  else showToast(`SIDE QUEST CLEARED · ${h.streak} day streak 🔥`);
+}
+
+// Aliases for any legacy calls
+function doTask(id){completeMainQuest(id);}
+function doHabit(id){completeSideQuest(id);}
+  const list=document.getElementById('roadmap-list');
+  list.innerHTML='';
+  S.phases.forEach((p,i)=>{
+    const doneCt=p.tasks.filter(t=>t.done).length;
+    const bc=p.isDone?'done':p.isActive?'cur':'lock';
+    const bt=p.isDone?'COMPLETE':p.isActive?'ACTIVE':'LOCKED';
+    const nc=p.isDone?'ph-done':p.isActive?'ph-active':'';
+
+    const card=document.createElement('div');card.className='phase-card';
+
+    const hdr=document.createElement('div');hdr.className='phase-hdr';
+    hdr.addEventListener('click',()=>document.getElementById('pb-'+p.id)?.classList.toggle('open'));
+    hdr.innerHTML=`<div class="phase-num ${nc}">${i+1}</div><div class="phase-info"><div class="phase-title"></div><div class="phase-meta">${doneCt}/${p.tasks.length} tasks · ${p.durationWeeks||'?'}w</div></div><div class="ph-badge ${bc}">${bt}</div>`;
+    hdr.querySelector('.phase-title').textContent=p.title;
+    card.appendChild(hdr);
+
+    const body=document.createElement('div');body.className='phase-body';body.id='pb-'+p.id;
+    if(p.description){const desc=document.createElement('div');desc.className='phase-desc';desc.textContent=`"${p.description}"`;body.appendChild(desc);}
+    p.tasks.forEach(t=>{
+      const row=document.createElement('div');row.className='ph-task'+(t.done?' done-t':'');
+      row.innerHTML='<span class="ph-task-dot">—</span>';
+      const txt=document.createElement('span');txt.textContent=t.title;
+      row.appendChild(txt);body.appendChild(row);
+    });
+    card.appendChild(body);
+    list.appendChild(card);
+  });
+}
+
+function togglePhase(id){document.getElementById('pb-'+id)?.classList.toggle('open');}
+
+function renderStats(){
+  const r=rank(S.level);
+  document.getElementById('st-lv').textContent=S.level;
+  document.getElementById('st-rank').textContent=r+'-RANK';
+  document.getElementById('st-done').textContent=S.tasksCompleted;
+  document.getElementById('st-texp').textContent=S.totalExp+' TOTAL EXP';
+  document.getElementById('st-streak').textContent=S.bestStreak;
+  document.getElementById('st-habits').textContent=S.habitsLogged;
+  const lb=document.getElementById('log-box');
+  lb.innerHTML='';
+  if(!S.log.length){
+    const em=document.createElement('div');em.style.cssText='font-family:var(--mono);font-size:9px;color:var(--text-dim);text-align:center;padding:12px;';em.textContent='NO RECORDS YET';lb.appendChild(em);
+  } else {
+    S.log.slice(0,35).forEach(e=>{
+      const row=document.createElement('div');row.className='log-row';
+      const t=document.createElement('span');t.className='log-t';t.textContent=e.t;
+      const m=document.createElement('span');m.className=`log-m ${e.type}`;m.textContent=e.msg;
+      row.appendChild(t);row.appendChild(m);lb.appendChild(row);
+    });
+  }
+}
+
+function renderRoadmap(){
+  const p=S.phases.find(p=>p.isActive&&!p.isDone);
+  if(!p||!p.tasks.every(t=>t.done))return;
+  p.isDone=true;p.isActive=false;
+  addLog(`⬡ PHASE COMPLETE: "${p.title}"`,'reward');
+  const next=S.phases.find(p=>!p.isDone&&!p.isActive);
+  if(next){next.isActive=true;S.todayTasks=makeTodayTasks();addLog(`▸ "${next.title}" — now active`,'system');showToast(`PHASE COMPLETE — ${next.title.toUpperCase()} UNLOCKED`,3000);}
+  else{addLog('★ ALL CAMPAIGNS COMPLETE. ULTIMATE GOAL ACHIEVED.','reward');showToast('★ ALL PHASES COMPLETE — GOAL ACHIEVED!',4000);}
+}
+
+function switchTab(name){
+  ['today','roadmap','stats'].forEach((n,i)=>{
+    document.querySelectorAll('.tab')[i].classList.toggle('active',n===name);
+    document.getElementById('tab-'+n).classList.toggle('active',n===name);
+  });
+  if(name==='stats')renderStats();
+  if(name==='roadmap')renderRoadmap();
+}
+
+function showLU(){
+  S.luPending=false;const r=rank(S.level);
+  document.getElementById('lu-lv').textContent=S.level;
+  const rEl=document.getElementById('lu-rank');rEl.textContent=`RANK: ${r}`;rEl.className=`lu-rank rank-${r}`;
+  document.getElementById('lu').classList.add('show');save();
+}
+function dismissLU(){document.getElementById('lu').classList.remove('show');}
+function confirmReset(){if(confirm('Reset all progress? Cannot be undone.')){localStorage.removeItem(KEY);location.reload();}}
+
+// ── NOTIFICATIONS ──
+let swReg=null;
+
+async function initSW(){
+  if(!('serviceWorker' in navigator))return;
+  try{
+    // Use real sw.js — not blob (blob scope won't work on Netlify)
+    swReg=await navigator.serviceWorker.register('/sw.js',{scope:'/'});
+    await navigator.serviceWorker.ready;
+    navigator.serviceWorker.addEventListener('message',e=>{
+      if(e.data?.type==='RESCHEDULE')scheduleNotif();
+    });
+  }catch(err){console.warn('[SW]',err);}
+}
+
+function msUntil7AM(){
+  const now=new Date(),next=new Date();
+  next.setHours(7,0,0,0);
+  if(next<=now)next.setDate(next.getDate()+1);
+  return next.getTime()-now.getTime();
+}
+
+function notifContent(){
+  const active=S.phases.find(p=>p.isActive&&!p.isDone);
+  const pt=S.todayTasks.filter(t=>!t.done).length;
+  const ph=S.habits.filter(h=>!h.doneToday).length;
+  const phase=active?active.title:'Final Phase';
+  return{
+    title:'⚡ The System — Daily Briefing',
+    body:pt>0||ph>0?`${pt} task${pt!==1?'s':''} · ${ph} habit${ph!==1?'s':''} pending · ${phase}`:`New day, new missions. Arise, ${S.playerName}.`,
+    tag:'sq-daily'
+  };
+}
+
+async function scheduleNotif(){
+  if(!swReg)return;
+  const sw=(await navigator.serviceWorker.ready).active;
+  if(!sw)return;
+  const {title,body,tag}=notifContent();
+  sw.postMessage({type:'SCHEDULE_NOTIF',msUntil:msUntil7AM(),title,body,tag});
+}
+
+async function requestNotifPermission(){
+  if(!('Notification' in window)){updateNotifUI('unsupported');return;}
+  document.getElementById('notif-btn').textContent='...';
+  const perm=await Notification.requestPermission();
+  if(perm==='granted'){
+    await initSW();await scheduleNotif();
+    S.notifEnabled=true;save();
+    updateNotifUI('granted');
+    showToast('⚡ MORNING BRIEFING SET — 7:00 AM');
+  }else{
+    updateNotifUI('denied');
+    showToast('NOTIFICATIONS BLOCKED — enable in Android Settings');
+  }
+}
+
+function updateNotifUI(state){
+  const btn=document.getElementById('notif-btn');
+  const sub=document.getElementById('notif-sub-text');
+  if(state==='granted'){
+    if(btn){btn.textContent='✓ ON';btn.style.color='var(--green)';btn.style.borderColor='rgba(0,255,136,.3)';}
+    if(sub)sub.textContent='Briefing scheduled: 7:00 AM daily.';
+  }else if(state==='denied'){
+    if(btn){btn.textContent='BLOCKED';btn.style.color='var(--red)';btn.style.borderColor='rgba(255,51,102,.3)';}
+    if(sub)sub.textContent='Denied. Go to Android Settings → Apps → Chrome → Notifications.';
+  }else if(state==='unsupported'){
+    if(btn)btn.textContent='N/A';
+  }
+}
+
+async function checkNotifState(){
+  const banner=document.getElementById('notif-banner');
+  if(!banner||!('Notification' in window))return;
+  banner.classList.add('show');
+  if(Notification.permission==='granted'){
+    updateNotifUI('granted');
+    if(!swReg){await initSW();await scheduleNotif();}
+  }else if(Notification.permission==='denied'){
+    updateNotifUI('denied');
+  }
+  // default = show banner with ENABLE button (already default state)
+}
+
+// ── INIT ──
+load();
+if(S.onboarded){checkReset();save();launchApp();}
+else showScr('screen-onboard');
+
+// ── SERVICE WORKER REGISTRATION (for PWA install) ──
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('/sw.js',{scope:'/'})
+      .then(r=>console.log('[SW] registered',r.scope))
+      .catch(e=>console.warn('[SW] failed',e));
+  });
+}
+</script>
+</body>
+</html>
